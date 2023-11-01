@@ -8,7 +8,7 @@
 
 echo "Prerequisites installation..."
 apt update
-apt install -y dnsmasq curl ipset
+apt install -y dnsmasq curl
 
 echo "Creating /etc/dnsmasq.conf..."
 touch /etc/dnsmasq.conf
