@@ -1,15 +1,13 @@
 #!/bin/bash
 
-# This part adds a protection through DNS filtering :
-#   1. install own local DNS server
-#   2. switch to DNS providers that block malicious domains
-#   3. add a blacklist (typosquatting, ads, trackers) and regularly update it
-
-
+# Installation of prerequisites, including a DNS server
+# Installation des prérequis et d'un serveur DNS local
 echo "Prerequisites installation..."
 apt update
 apt install -y dnsmasq curl
 
+# Configuration du serveur DNS
+# DNS server configuration
 echo "Creating /etc/dnsmasq.conf..."
 touch /etc/dnsmasq.conf
 echo "domain-needed
@@ -20,18 +18,18 @@ strict-order
 conf-file=/etc/dnsmasq-hosts.conf
 expand-hosts" >> /etc/dnsmasq.conf
 
+# Setting DNS providers to Cloudflare and Quad9
+# To block pornographic sites, change 1.1.1.2 to 1.1.1.3 and 1.0.0.2 to 1.0.0.3
+# Paramétrage des fournisseurs DNS : Cloudflare et Quad9
+# Pour bloquer les contenus pornographiques, changer 1.1.1.2 en 1.1.1.3 et 1.0.0.2 en 1.0.0.3
 echo "Creating /etc/resolv.dnsmasq..."
 touch /etc/resolv.dnsmasq
-echo "nameserver 1.1.1.3
+echo "nameserver 1.1.1.2
 nameserver 9.9.9.9
-nameserver 1.0.0.3" >> /etc/resolv.dnsmasq
+nameserver 1.0.0.2" >> /etc/resolv.dnsmasq
 
-echo "Stopping and deactivating old resolver..."
-systemctl stop systemd-resolved
-sed -i 's/\[main\]/\[main\]\nrc-manager=unmanaged/' /etc/NetworkManager/NetworkManager.conf
-sed -i 's/dns=default/dns=none/' /etc/NetworkManager/NetworkManager.conf
-echo "DNSStubListener=no" >> /etc/systemd/resolved.conf
-
+# Creating a blacklist building script from multiple sources
+# Création d'un script de constitution de la liste noire à partir de plusieurs sources
 echo "Creating /root/dns-blacklist-update.sh..."
 cat <<EOF > /root/dns-blacklist-update.sh
 #!/bin/bash
@@ -51,19 +49,27 @@ EOF
 
 chmod +x /root/dns-blacklist-update.sh
 
+# Creating an anacron task to run this script once a week
+# Création d'une tâche anacron pour lancer ce script une fois par semaine
 echo "Setting ANACRON to run dns-blacklist-update.sh once a week..."
 echo -e "7\t3\tDNS_blacklist_update\t/root/dns-blacklist-update.sh" >> /etc/anacrontab
 
-echo "Temporarily starting old resolver to run dns-blacklist-update.sh for the first time..."
-
-systemctl start systemd-resolved
+# Run this script for the first time
+# Lancer le script une première fois
 /root/dns-blacklist-update.sh
 
-echo "Finally disabling the old resolver for good..."
+# Stopping and deactivating default resolver
+# Arrêt et désactivation du résolveur par défaut
+echo "Stopping and deactivating old resolver for good..."
 systemctl stop systemd-resolved
+sed -i 's/\[main\]/\[main\]\nrc-manager=unmanaged/' /etc/NetworkManager/NetworkManager.conf
+sed -i 's/dns=default/dns=none/' /etc/NetworkManager/NetworkManager.conf
+echo "DNSStubListener=no" >> /etc/systemd/resolved.conf
 systemctl disable systemd-resolved
 rm /etc/resolv.conf
 
+# Start new resolver
+# Démarrage du nouveau service DNS
 echo "Running new resolver..."
 systemctl restart dnsmasq
 
