@@ -23,8 +23,12 @@ TBD
 ## Contributing
 TBD
 
-## Authors and acknowledgment
-TBD
+## Compatibility
+The scripts have been successfully tested on :
+- Linux mint 21.2
+- Linux mint 21
+- Linux mint 20.2
+- Linux mint 20.1
 
 ## License
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License version 3 as published by the Free Software Foundation.
