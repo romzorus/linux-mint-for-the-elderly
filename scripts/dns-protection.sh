@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# FIXME : add a step here to check sudo/root rights
+# OK -> continue
+# NOK -> abort
+
 # Installation of prerequisites, including a DNS server
 # Installation des prérequis et d'un serveur DNS local
 echo "Prerequisites installation..."
